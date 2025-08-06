@@ -11,6 +11,8 @@ export default function SearchHospital() {
   const [cities, setCities] = useState([]);
   const [formData, setFormData] = useState({ state: "", city: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [isStatesLoaded, setIsStatesLoaded] = useState(false);
+  const [isCitiesLoaded, setIsCitiesLoaded] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,8 +22,10 @@ export default function SearchHospital() {
           "https://meddata-backend.onrender.com/states"
         );
         setStates(response.data);
+        setIsStatesLoaded(true);
       } catch (error) {
         console.error("Error fetching states:", error);
+        setIsStatesLoaded(true); // Mark as loaded even on error to prevent infinite loading
       }
     };
 
@@ -33,21 +37,27 @@ export default function SearchHospital() {
       setCities([]);
       setFormData((prev) => ({ ...prev, city: "" }));
       setIsLoading(true);
+      setIsCitiesLoaded(false);
+      
       try {
         const data = await axios.get(
           `https://meddata-backend.onrender.com/cities/${formData.state}`
         );
         setCities(data.data);
         setIsLoading(false);
+        setIsCitiesLoaded(true);
         // console.log("city", data.data);
       } catch (error) {
         console.log("Error in fetching city:", error);
         setIsLoading(false);
+        setIsCitiesLoaded(true); // Mark as loaded even on error
       }
     };
 
     if (formData.state !== "") {
       fetchCities();
+    } else {
+      setIsCitiesLoaded(false);
     }
   }, [formData.state]);
 
@@ -63,8 +73,8 @@ export default function SearchHospital() {
     }
   };
 
-  // Check if both state and city are selected
-  const isFormValid = formData.state && formData.city && !isLoading;
+  // Check if both state and city are selected and all data is loaded
+  const isFormValid = formData.state && formData.city && !isLoading && isStatesLoaded && isCitiesLoaded;
 
   return (
     <Box
@@ -89,13 +99,14 @@ export default function SearchHospital() {
           </InputAdornment>
         }
         required
+        disabled={!isStatesLoaded}
         sx={{ minWidth: 200, width: "100%" }}
       >
         <MenuItem disabled value="" selected>
-          State
+          {!isStatesLoaded ? "Loading states..." : "State"}
         </MenuItem>
         {states.map((state) => (
-          <MenuItem key={state} value={state}>
+          <MenuItem key={state} value={state} data-value={state}>
             {state}
           </MenuItem>
         ))}
@@ -113,19 +124,20 @@ export default function SearchHospital() {
           </InputAdornment>
         }
         required
-        disabled={!formData.state || isLoading}
+        disabled={!formData.state || isLoading || !isCitiesLoaded}
         sx={{ minWidth: 200, width: "100%" }}
       >
         <MenuItem disabled value="" selected>
-          {isLoading ? "Loading cities..." : "City"}
+          {!formData.state ? "Select state first" : isLoading ? "Loading cities..." : "City"}
         </MenuItem>
         {cities.map((city) => (
-          <MenuItem key={city} value={city}>
+          <MenuItem key={city} value={city} data-value={city}>
             {city}
           </MenuItem>
         ))}
       </Select>
 
+      {/* Search button is conditionally rendered only when both state and city are selected */}
       {isFormValid && (
         <Button
           id="searchBtn"

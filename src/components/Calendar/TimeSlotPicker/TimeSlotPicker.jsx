@@ -1,5 +1,5 @@
 import { Chip, Stack, Typography, Divider, Box } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function TimeSlotPicker({
   availableSlots,
@@ -9,12 +9,23 @@ export default function TimeSlotPicker({
 }) {
   const [isBookingInProgress, setIsBookingInProgress] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [isReady, setIsReady] = useState(false);
+
+  // Ensure component is ready for interaction
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsReady(true);
+    }, 150);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const CustomChip = (props) => (
     <Chip
       label={props.label}
       color={selectedSlot === props.label ? "primary" : "default"}
       variant={selectedSlot === props.label ? "filled" : "outlined"}
+      data-testid={`time-slot-${props.label.replace(/\s+/g, '-').toLowerCase()}`}
       sx={{
         borderRadius: "5px",
         fontSize: { xs: 10, md: 14 },
@@ -28,21 +39,22 @@ export default function TimeSlotPicker({
         "&:hover": {
           transform: "scale(1.05)",
         },
+        opacity: isReady ? 1 : 0.7,
       }}
       onClick={props.handleClick}
-      disabled={isBookingInProgress}
+      disabled={isBookingInProgress || !isReady}
     />
   );
 
   const handleClick = async (slot) => {
-    if (isBookingInProgress) return;
+    if (isBookingInProgress || !isReady) return;
     
     setIsBookingInProgress(true);
     setSelectedSlot(slot);
     
     try {
       // Add a small delay to ensure UI updates are visible
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 150));
       
       const bookingDetails = { 
         ...details, 
@@ -81,12 +93,14 @@ export default function TimeSlotPicker({
         </Box>
       )}
       
+      {/* Morning time slots */}
       {availableSlots.morning.length > 0 && (
         <Stack
           direction="row"
           alignItems="center"
           px={{ xs: 0, md: 6 }}
           flexWrap={"wrap"}
+          data-testid="morning-slots"
         >
           <Typography
             width={{ xs: 1, md: "15%" }}
@@ -103,12 +117,15 @@ export default function TimeSlotPicker({
           ))}
         </Stack>
       )}
+      
+      {/* Afternoon time slots */}
       {availableSlots.afternoon.length > 0 && (
         <Stack
           direction="row"
           alignItems="center"
           px={{ xs: 0, md: 6 }}
           flexWrap={"wrap"}
+          data-testid="afternoon-slots"
         >
           <Typography
             width={{ xs: 1, md: "15%" }}
@@ -125,12 +142,15 @@ export default function TimeSlotPicker({
           ))}
         </Stack>
       )}
+      
+      {/* Evening time slots */}
       {availableSlots.evening.length > 0 && (
         <Stack
           direction="row"
           alignItems="center"
           px={{ xs: 0, md: 6 }}
           flexWrap={"wrap"}
+          data-testid="evening-slots"
         >
           <Typography
             width={{ xs: 1, md: "15%" }}

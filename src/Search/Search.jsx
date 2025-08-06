@@ -25,6 +25,7 @@ export default function Search() {
   const [showBookingSuccess, setShowBookingSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   //API to fetch hospitals based on state and city selection 
   useEffect(() => {
@@ -32,6 +33,7 @@ export default function Search() {
       if (!state || !city) {
         setHospitals([]);
         setError(null);
+        setIsInitialLoad(false);
         return;
       }
 
@@ -41,14 +43,17 @@ export default function Search() {
       
       try {
         const data = await axios.get(
-          `https://meddata-backend.onrender.com/data?state=${state}&city=${city}`
+          `https://meddata-backend.onrender.com/data?state=${state}&city=${city}`,
+          { timeout: 15000 } // Add timeout for better reliability
         );
         setHospitals(data.data);
         setIsLoading(false);
+        setIsInitialLoad(false);
       } catch (err) {
         console.log(err);
         setError("Failed to load hospitals. Please try again.");
         setIsLoading(false);
+        setIsInitialLoad(false);
       }
     };
 
@@ -131,16 +136,19 @@ export default function Search() {
               width={{ xs: 1, md: "calc(100% - 384px)" }}
               mr="24px"
             >
+              {/* Hospital cards are rendered with proper data-testid for testing */}
               {hospitals.length > 0 &&
-                hospitals.map((hospital) => (
+                hospitals.map((hospital, index) => (
                   <HospitalCard
                     key={hospital["Hospital Name"]}
                     details={hospital}
                     availableSlots={availableSlots}
                     handleBooking={handleBookingModal}
+                    data-testid={`hospital-card-${index}`}
                   />
                 ))}
 
+              {/* Loading state with proper timeout */}
               {isLoading && (
                 <Box
                   sx={{
@@ -153,6 +161,7 @@ export default function Search() {
                     flexDirection: "column",
                     gap: 2,
                   }}
+                  data-testid="loading-hospitals"
                 >
                   <CircularProgress color="primary" />
                   <Typography variant="h6" color="primary.main">
@@ -161,6 +170,7 @@ export default function Search() {
                 </Box>
               )}
 
+              {/* Error state */}
               {error && (
                 <Box
                   sx={{
@@ -169,6 +179,7 @@ export default function Search() {
                     borderRadius: 2,
                     border: "1px solid #ffcdd2",
                   }}
+                  data-testid="error-message"
                 >
                   <Typography color="error.main" textAlign="center">
                     {error}
@@ -176,7 +187,8 @@ export default function Search() {
                 </Box>
               )}
 
-              {!state && !city && !isLoading && !error && (
+              {/* Initial state - prompt to select state and city */}
+              {!state && !city && !isLoading && !error && !isInitialLoad && (
                 <Box
                   sx={{
                     bgcolor: "#fff",
@@ -184,6 +196,7 @@ export default function Search() {
                     borderRadius: 2,
                     textAlign: "center",
                   }}
+                  data-testid="select-prompt"
                 >
                   <Typography variant="h6" color="text.secondary">
                     Please select a state and city to search for hospitals
@@ -191,7 +204,8 @@ export default function Search() {
                 </Box>
               )}
 
-              {hospitals.length === 0 && state && city && !isLoading && !error && (
+              {/* No hospitals found state */}
+              {hospitals.length === 0 && state && city && !isLoading && !error && !isInitialLoad && (
                 <Box
                   sx={{
                     bgcolor: "#fff",
@@ -199,6 +213,7 @@ export default function Search() {
                     borderRadius: 2,
                     textAlign: "center",
                   }}
+                  data-testid="no-hospitals"
                 >
                   <Typography variant="h6" color="text.secondary">
                     No hospitals found in {city}, {state}

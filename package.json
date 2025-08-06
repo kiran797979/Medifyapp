@@ -22,7 +22,7 @@
     "react-ga4": "^2.1.0",
     "react-router-dom": "^6.22.3",
     "react-scripts": "5.0.1",
-    "stream-browserify": "^3.0.0",
+    "stream-browserify": "^0.2.0",
     "stream-http": "^3.2.0",
     "swiper": "^11.1.0",
     "url": "^0.11.3",
@@ -30,11 +30,17 @@
     "util": "^0.12.5",
     "web-vitals": "^2.1.4"
   },
+  "devDependencies": {
+    "cypress": "^13.6.4"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "test:e2e": "start-server-and-test start http://localhost:3000 cypress:run"
   },
   "eslintConfig": {
     "extends": ["react-app", "react-app/jest"]

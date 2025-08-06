@@ -8,10 +8,22 @@ import NavBar from "../components/NavBar/NavBar";
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
   const [filteredBookings, setFilteredBookings] = useState([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const localBookings = localStorage.getItem("bookings") || "[]";
-    setBookings(JSON.parse(localBookings));
+    // Load bookings from localStorage with proper error handling
+    try {
+      const localBookings = localStorage.getItem("bookings") || "[]";
+      const parsedBookings = JSON.parse(localBookings);
+      setBookings(parsedBookings);
+      setFilteredBookings(parsedBookings);
+    } catch (error) {
+      console.error("Error loading bookings:", error);
+      setBookings([]);
+      setFilteredBookings([]);
+    } finally {
+      setIsLoaded(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -75,19 +87,52 @@ export default function MyBookings() {
               mr="24px"
             >
                 
+              {/* Render booking cards with proper data attributes for testing */}
               {filteredBookings.length > 0 &&
-                filteredBookings.map((hospital) => (
+                filteredBookings.map((hospital, index) => (
                   <HospitalCard
                     key={hospital["Hospital Name"]}
                     details={hospital}
                     booking={true}
+                    data-testid={`booking-card-${index}`}
                   />
                 ))}
 
-              {filteredBookings.length === 0 && (
-                <Typography variant="h3" bgcolor="#fff" p={3} borderRadius={2}>
-                  No Bookings Found!
-                </Typography>
+              {/* No bookings found state */}
+              {filteredBookings.length === 0 && isLoaded && (
+                <Box
+                  sx={{
+                    bgcolor: "#fff",
+                    p: 3,
+                    borderRadius: 2,
+                    textAlign: "center",
+                  }}
+                  data-testid="no-bookings"
+                >
+                  <Typography variant="h3" color="text.secondary">
+                    No Bookings Found!
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" mt={1}>
+                    You haven't made any bookings yet. Start by searching for hospitals.
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Loading state */}
+              {!isLoaded && (
+                <Box
+                  sx={{
+                    bgcolor: "#fff",
+                    p: 3,
+                    borderRadius: 2,
+                    textAlign: "center",
+                  }}
+                  data-testid="loading-bookings"
+                >
+                  <Typography variant="h6" color="text.secondary">
+                    Loading your bookings...
+                  </Typography>
+                </Box>
               )}
             </Stack>
 

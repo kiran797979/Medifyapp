@@ -13,22 +13,37 @@ export default function HospitalCard({
 }) {
   const [showCalendar, setShowCalendar] = useState(false);
   const [isBookingInProgress, setIsBookingInProgress] = useState(false);
+  const [isButtonReady, setIsButtonReady] = useState(false);
 
   // Reset booking state when component unmounts or details change
   useEffect(() => {
     return () => {
       setShowCalendar(false);
       setIsBookingInProgress(false);
+      setIsButtonReady(false);
     };
   }, [details]);
 
+  // Ensure button is ready after component mounts
+  useEffect(() => {
+    // Small delay to ensure component is fully rendered
+    const timer = setTimeout(() => {
+      setIsButtonReady(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleBookingClick = () => {
+    if (!isButtonReady || isBookingInProgress) return;
+    
     setIsBookingInProgress(true);
     setShowCalendar((prev) => !prev);
+    
     // Small delay to ensure state updates before any async operations
     setTimeout(() => {
       setIsBookingInProgress(false);
-    }, 100);
+    }, 200);
   };
 
   const handleBookingSubmit = (bookingDetails) => {
@@ -144,21 +159,25 @@ export default function HospitalCard({
               >
                 Available Today
               </Typography>
-              <Button
-                variant="contained"
-                disableElevation
-                onClick={handleBookingClick}
-                disabled={isBookingInProgress}
-                data-testid="book-appointment-btn"
-                sx={{
-                  minHeight: "48px",
-                  transition: "all 0.2s ease-in-out",
-                }}
-              >
-                {!showCalendar
-                  ? "Book FREE Center Visit"
-                  : "Hide Booking Calendar"}
-              </Button>
+              {/* Booking button is conditionally rendered and ready for interaction */}
+              {isButtonReady && (
+                <Button
+                  variant="contained"
+                  disableElevation
+                  onClick={handleBookingClick}
+                  disabled={isBookingInProgress}
+                  data-testid="book-appointment-btn"
+                  sx={{
+                    minHeight: "48px",
+                    transition: "all 0.2s ease-in-out",
+                    opacity: isButtonReady ? 1 : 0.5,
+                  }}
+                >
+                  {!showCalendar
+                    ? "Book FREE Center Visit"
+                    : "Hide Booking Calendar"}
+                </Button>
+              )}
             </>
           )}
 
@@ -187,6 +206,7 @@ export default function HospitalCard({
         </Stack>
       </Stack>
 
+      {/* Booking calendar is conditionally rendered with proper timing */}
       {showCalendar && (
         <Box
           sx={{
