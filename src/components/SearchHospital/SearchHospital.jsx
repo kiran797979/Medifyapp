@@ -10,6 +10,7 @@ export default function SearchHospital() {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
   const [formData, setFormData] = useState({ state: "", city: "" });
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,18 +32,21 @@ export default function SearchHospital() {
     const fetchCities = async () => {
       setCities([]);
       setFormData((prev) => ({ ...prev, city: "" }));
+      setIsLoading(true);
       try {
         const data = await axios.get(
           `https://meddata-backend.onrender.com/cities/${formData.state}`
         );
         setCities(data.data);
+        setIsLoading(false);
         // console.log("city", data.data);
       } catch (error) {
         console.log("Error in fetching city:", error);
+        setIsLoading(false);
       }
     };
 
-    if (formData.state != "") {
+    if (formData.state !== "") {
       fetchCities();
     }
   }, [formData.state]);
@@ -58,6 +62,9 @@ export default function SearchHospital() {
       navigate(`/search?state=${formData.state}&city=${formData.city}`);
     }
   };
+
+  // Check if both state and city are selected
+  const isFormValid = formData.state && formData.city && !isLoading;
 
   return (
     <Box
@@ -106,10 +113,11 @@ export default function SearchHospital() {
           </InputAdornment>
         }
         required
+        disabled={!formData.state || isLoading}
         sx={{ minWidth: 200, width: "100%" }}
       >
         <MenuItem disabled value="" selected>
-          City
+          {isLoading ? "Loading cities..." : "City"}
         </MenuItem>
         {cities.map((city) => (
           <MenuItem key={city} value={city}>
@@ -118,16 +126,19 @@ export default function SearchHospital() {
         ))}
       </Select>
 
-      <Button
-        type="submit"
-        variant="contained"
-        size="large"
-        startIcon={<SearchIcon />}
-        sx={{ py: "15px", px: 8, flexShrink: 0 }}
-        disableElevation
-      >
-        Search
-      </Button>
+      {isFormValid && (
+        <Button
+          id="searchBtn"
+          type="submit"
+          variant="contained"
+          size="large"
+          startIcon={<SearchIcon />}
+          sx={{ py: "15px", px: 8, flexShrink: 0 }}
+          disableElevation
+        >
+          Search
+        </Button>
+      )}
     </Box>
   );
 }

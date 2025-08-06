@@ -1,5 +1,5 @@
-import styled from "@emotion/styled";
-import { Chip, Stack, Typography, Divider } from "@mui/material";
+import { Chip, Stack, Typography, Divider, Box } from "@mui/material";
+import { useState } from "react";
 
 export default function TimeSlotPicker({
   availableSlots,
@@ -7,11 +7,14 @@ export default function TimeSlotPicker({
   handleBooking,
   selectedDate,
 }) {
+  const [isBookingInProgress, setIsBookingInProgress] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+
   const CustomChip = (props) => (
     <Chip
       label={props.label}
-      color="primary"
-      variant="outlined"
+      color={selectedSlot === props.label ? "primary" : "default"}
+      variant={selectedSlot === props.label ? "filled" : "outlined"}
       sx={{
         borderRadius: "5px",
         fontSize: { xs: 10, md: 14 },
@@ -21,13 +24,40 @@ export default function TimeSlotPicker({
         },
         mr: { xs: 1, md: 3 },
         mt: { xs: 1, md: 0 },
+        transition: "all 0.2s ease-in-out",
+        "&:hover": {
+          transform: "scale(1.05)",
+        },
       }}
       onClick={props.handleClick}
+      disabled={isBookingInProgress}
     />
   );
 
-  const handleClick = (slot) => {
-    handleBooking({ ...details, bookingDate: selectedDate, bookingTime: slot });
+  const handleClick = async (slot) => {
+    if (isBookingInProgress) return;
+    
+    setIsBookingInProgress(true);
+    setSelectedSlot(slot);
+    
+    try {
+      // Add a small delay to ensure UI updates are visible
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const bookingDetails = { 
+        ...details, 
+        bookingDate: selectedDate, 
+        bookingTime: slot 
+      };
+      
+      await handleBooking(bookingDetails);
+    } catch (error) {
+      console.error("Booking failed:", error);
+      // Reset selection on error
+      setSelectedSlot(null);
+    } finally {
+      setIsBookingInProgress(false);
+    }
   };
 
   return (
@@ -36,6 +66,21 @@ export default function TimeSlotPicker({
       spacing={{ xs: 2, md: 3 }}
       divider={<Divider orientation="horizontal" flexItem />}
     >
+      {isBookingInProgress && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            py: 2,
+          }}
+        >
+          <Typography color="primary.main" fontSize={14}>
+            Processing booking...
+          </Typography>
+        </Box>
+      )}
+      
       {availableSlots.morning.length > 0 && (
         <Stack
           direction="row"
@@ -80,7 +125,7 @@ export default function TimeSlotPicker({
           ))}
         </Stack>
       )}
-      {availableSlots.afternoon.length > 0 && (
+      {availableSlots.evening.length > 0 && (
         <Stack
           direction="row"
           alignItems="center"

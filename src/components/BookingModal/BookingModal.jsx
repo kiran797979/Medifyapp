@@ -64,6 +64,7 @@ export default function BookingModal({
   return (
     <Modal open={open} onClose={() => setOpen(false)}>
       <Box
+        data-testid="booking-modal"
         sx={{
           width: "95%",
           maxWidth: 600,
@@ -101,6 +102,7 @@ export default function BookingModal({
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              data-testid="email-input"
             />
             <Stack direction="row" spacing={1}>
               <Button
@@ -108,6 +110,7 @@ export default function BookingModal({
                 variant="contained"
                 size="large"
                 disableElevation
+                data-testid="confirm-booking-btn"
               >
                 Confirm
               </Button>
@@ -116,6 +119,7 @@ export default function BookingModal({
                 size="large"
                 disableElevation
                 onClick={() => setOpen(false)}
+                data-testid="cancel-booking-btn"
               >
                 Cancel
               </Button>

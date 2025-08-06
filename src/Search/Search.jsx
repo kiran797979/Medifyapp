@@ -1,4 +1,4 @@
-import { Container, Stack, Box, Typography } from "@mui/material";
+import { Container, Stack, Box, Typography, CircularProgress } from "@mui/material";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -11,10 +11,10 @@ import AutohideSnackbar from "../components/AutohideSnackbar/AutohideSnackbar";
 import NavBar from "../components/NavBar/NavBar";
 
 export default function Search() {
-  const [seachParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [hospitals, setHospitals] = useState([]);
-  const [state, setState] = useState(seachParams.get("state"));
-  const [city, setCity] = useState(seachParams.get("city"));
+  const [state, setState] = useState(searchParams.get("state"));
+  const [city, setCity] = useState(searchParams.get("city"));
   const availableSlots = {
     morning: ["11:30 AM"],
     afternoon: ["12:00 PM", "12:30 PM", "01:30 PM", "02:00 PM", "02:30 PM"],
@@ -24,12 +24,21 @@ export default function Search() {
   const [bookingDetails, setBookingDetails] = useState({});
   const [showBookingSuccess, setShowBookingSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   //API to fetch hospitals based on state and city selection 
   useEffect(() => {
     const getHospitals = async () => {
+      if (!state || !city) {
+        setHospitals([]);
+        setError(null);
+        return;
+      }
+
       setHospitals([]);
       setIsLoading(true);
+      setError(null);
+      
       try {
         const data = await axios.get(
           `https://meddata-backend.onrender.com/data?state=${state}&city=${city}`
@@ -38,19 +47,18 @@ export default function Search() {
         setIsLoading(false);
       } catch (err) {
         console.log(err);
+        setError("Failed to load hospitals. Please try again.");
         setIsLoading(false);
       }
     };
 
-    if (state && city) {
-      getHospitals();
-    }
+    getHospitals();
   }, [state, city]);
 
   useEffect(() => {
-    setState(seachParams.get("state"));
-    setCity(seachParams.get("city"));
-  }, [seachParams]);
+    setState(searchParams.get("state"));
+    setCity(searchParams.get("city"));
+  }, [searchParams]);
 
   // show booking modal
   const handleBookingModal = (details) => {
@@ -103,7 +111,7 @@ export default function Search() {
               >
                 {`${hospitals.length} medical centers available in `}
                 <span style={{ textTransform: "capitalize" }}>
-                  {city.toLocaleLowerCase()}
+                  {city.toLowerCase()}
                 </span>
               </Typography>
               <Stack direction="row" spacing={2}>
@@ -134,15 +142,68 @@ export default function Search() {
                 ))}
 
               {isLoading && (
-                <Typography variant="h3" bgcolor="#fff" p={3} borderRadius={2}>
-                  Loading...
-                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    bgcolor: "#fff",
+                    p: 4,
+                    borderRadius: 2,
+                    flexDirection: "column",
+                    gap: 2,
+                  }}
+                >
+                  <CircularProgress color="primary" />
+                  <Typography variant="h6" color="primary.main">
+                    Loading hospitals...
+                  </Typography>
+                </Box>
               )}
 
-              {!state && (
-                <Typography variant="h3" bgcolor="#fff" p={3} borderRadius={2}>
-                  Please select a state and city
-                </Typography>
+              {error && (
+                <Box
+                  sx={{
+                    bgcolor: "#fff",
+                    p: 3,
+                    borderRadius: 2,
+                    border: "1px solid #ffcdd2",
+                  }}
+                >
+                  <Typography color="error.main" textAlign="center">
+                    {error}
+                  </Typography>
+                </Box>
+              )}
+
+              {!state && !city && !isLoading && !error && (
+                <Box
+                  sx={{
+                    bgcolor: "#fff",
+                    p: 3,
+                    borderRadius: 2,
+                    textAlign: "center",
+                  }}
+                >
+                  <Typography variant="h6" color="text.secondary">
+                    Please select a state and city to search for hospitals
+                  </Typography>
+                </Box>
+              )}
+
+              {hospitals.length === 0 && state && city && !isLoading && !error && (
+                <Box
+                  sx={{
+                    bgcolor: "#fff",
+                    p: 3,
+                    borderRadius: 2,
+                    textAlign: "center",
+                  }}
+                >
+                  <Typography variant="h6" color="text.secondary">
+                    No hospitals found in {city}, {state}
+                  </Typography>
+                </Box>
               )}
             </Stack>
 

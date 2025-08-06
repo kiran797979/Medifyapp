@@ -2,7 +2,7 @@ import icon from "../../assets/hospitalicon.png";
 import { Box, Button, Chip, Divider, Stack, Typography } from "@mui/material";
 import thumb from "../../assets/thumbsup.png";
 import Calendar from "../Calendar/Calendar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 
 export default function HospitalCard({
@@ -12,9 +12,41 @@ export default function HospitalCard({
   booking = false,
 }) {
   const [showCalendar, setShowCalendar] = useState(false);
+  const [isBookingInProgress, setIsBookingInProgress] = useState(false);
+
+  // Reset booking state when component unmounts or details change
+  useEffect(() => {
+    return () => {
+      setShowCalendar(false);
+      setIsBookingInProgress(false);
+    };
+  }, [details]);
+
+  const handleBookingClick = () => {
+    setIsBookingInProgress(true);
+    setShowCalendar((prev) => !prev);
+    // Small delay to ensure state updates before any async operations
+    setTimeout(() => {
+      setIsBookingInProgress(false);
+    }, 100);
+  };
+
+  const handleBookingSubmit = (bookingDetails) => {
+    setIsBookingInProgress(true);
+    try {
+      handleBooking(bookingDetails);
+    } catch (error) {
+      console.error("Booking error:", error);
+    } finally {
+      setIsBookingInProgress(false);
+    }
+  };
 
   return (
-    <Box sx={{ borderRadius: 2, bgcolor: "#fff", p: { xs: 2, md: 4 } }}>
+    <Box 
+      sx={{ borderRadius: 2, bgcolor: "#fff", p: { xs: 2, md: 4 } }}
+      data-testid="hospital-card"
+    >
       <Stack
         direction={{ xs: "column", md: "row" }}
         spacing={{ xs: 1, md: 4 }}
@@ -26,6 +58,7 @@ export default function HospitalCard({
           width={{ xs: 64, md: 130 }}
           height="auto"
           sx={{ flexShrink: 0, alignSelf: "start" }}
+          alt="Hospital Icon"
         />
         <Box flex={1}>
           <Typography
@@ -81,6 +114,7 @@ export default function HospitalCard({
               src={thumb}
               width={{ xs: 16, md: 20 }}
               height={{ xs: 16, md: 20 }}
+              alt="Rating Icon"
             />
             <Typography
               fontWeight={700}
@@ -88,7 +122,7 @@ export default function HospitalCard({
               color="#fff"
               sx={{ opacity: 0.5 }}
             >
-              {details["Hospital overall rating"] == "Not Available"
+              {details["Hospital overall rating"] === "Not Available"
                 ? 0
                 : details["Hospital overall rating"]}
             </Typography>
@@ -113,7 +147,13 @@ export default function HospitalCard({
               <Button
                 variant="contained"
                 disableElevation
-                onClick={() => setShowCalendar((prev) => !prev)}
+                onClick={handleBookingClick}
+                disabled={isBookingInProgress}
+                data-testid="book-appointment-btn"
+                sx={{
+                  minHeight: "48px",
+                  transition: "all 0.2s ease-in-out",
+                }}
               >
                 {!showCalendar
                   ? "Book FREE Center Visit"
@@ -148,11 +188,31 @@ export default function HospitalCard({
       </Stack>
 
       {showCalendar && (
-        <Calendar
-          details={details}
-          availableSlots={availableSlots}
-          handleBooking={handleBooking}
-        />
+        <Box
+          sx={{
+            mt: 3,
+            pt: 3,
+            borderTop: "1px solid #e0e0e0",
+            animation: "fadeIn 0.3s ease-in-out",
+            "@keyframes fadeIn": {
+              "0%": {
+                opacity: 0,
+                transform: "translateY(-10px)",
+              },
+              "100%": {
+                opacity: 1,
+                transform: "translateY(0)",
+              },
+            },
+          }}
+          data-testid="booking-calendar"
+        >
+          <Calendar
+            details={details}
+            availableSlots={availableSlots}
+            handleBooking={handleBookingSubmit}
+          />
+        </Box>
       )}
     </Box>
   );
