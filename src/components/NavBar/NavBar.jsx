@@ -1,90 +1,109 @@
 import {
+  AppBar,
   Box,
-  Container,
   Button,
-  List,
-  ListItem,
+  Container,
+  Drawer,
+  IconButton,
   Stack,
   Typography,
-  useMediaQuery,
-  IconButton,
 } from "@mui/material";
-import { Link } from "react-router-dom";
-import logo from "../../assets/logo.png";
-import styles from "./NavBar.module.css";
-import { useState } from "react";
-import CloseIcon from "@mui/icons-material/Close";
 import MenuIcon from "@mui/icons-material/Menu";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function NavBar() {
-  const isMobile = useMediaQuery("(max-width:900px)");
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const menuItems = [
+    { text: "Home", path: "/" },
+    { text: "Search", path: "/search" },
+    { text: "My Bookings", path: "/my-bookings" },
+  ];
+
+  const drawer = (
+    <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
+      <Typography variant="h6" sx={{ my: 2 }}>
+        Medify
+      </Typography>
+      <Stack spacing={2}>
+        {menuItems.map((item) => (
+          <Link
+            key={item.text}
+            to={item.path}
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            <Button color="inherit">{item.text}</Button>
+          </Link>
+        ))}
+      </Stack>
+    </Box>
+  );
 
   return (
-    <header>
-      <Box p={1} bgcolor="primary.main">
-        <Typography fontSize={14} textAlign="center" color="#fff">
-          The health and well-being of our patients and their health care team
-          will always be our priority, so we follow the best practices for
-          cleanliness.
-        </Typography>
-      </Box>
-
-      <Container maxWidth="xl">
-        <Stack
-          direction="row"
-          spacing={2}
-          alignItems="center"
-          justifyContent="space-between"
-          py={2}
-        >
-          <Link to="/">
-            <img src={logo} alt="Logo" height={27} />
-          </Link>
-
+    <>
+      <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
+        <Container maxWidth="xl">
           <Stack
-            direction={{ xs: "column", md: "row" }}
-            spacing={4}
-            alignItems={{ xs: "flex-start", md: "center" }}
-            className={[styles.navlinks, menuOpen && styles.active]}
-            pt={{ xs: 12, md: 1 }}
-            pb={{ xs: 4, md: 1 }}
-            px={{ xs: 4, md: 0 }}
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            py={2}
           >
-            <Link>Find Doctors</Link>
-            <Link to="/search">Hospitals</Link>
-            <Link>Medicines</Link>
-            <Link>Surgeries</Link>
-            <Link>Software for Provider</Link>
-            <Link>Facilities</Link>
-            <Link to="/my-bookings">
-              <Button variant="contained" disableElevation>
-                My Bookings
-              </Button>
+            <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+              <Typography variant="h5" fontWeight={700} color="primary.main">
+                Medify
+              </Typography>
             </Link>
 
-            {isMobile && (
-              <IconButton
-                onClick={() => setMenuOpen(false)}
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  right: 32,
-                  color: "#fff",
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
-            )}
-          </Stack>
+            <Box sx={{ display: { xs: "none", md: "flex" } }}>
+              <Stack direction="row" spacing={2}>
+                {menuItems.map((item) => (
+                  <Link
+                    key={item.text}
+                    to={item.path}
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    <Button color="inherit">{item.text}</Button>
+                  </Link>
+                ))}
+              </Stack>
+            </Box>
 
-          {isMobile && (
-            <IconButton onClick={() => setMenuOpen(true)}>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2, display: { md: "none" } }}
+            >
               <MenuIcon />
             </IconButton>
-          )}
-        </Stack>
-      </Container>
-    </header>
+          </Stack>
+        </Container>
+      </AppBar>
+
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true,
+        }}
+        sx={{
+          display: { xs: "block", md: "none" },
+          "& .MuiDrawer-paper": {
+            boxSizing: "border-box",
+            width: 240,
+          },
+        }}
+      >
+        {drawer}
+      </Drawer>
+    </>
   );
 }
