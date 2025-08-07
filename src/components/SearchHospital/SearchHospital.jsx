@@ -110,7 +110,7 @@ export default function SearchHospital() {
         </MenuItem>
         {states.map((state) => (
           <MenuItem key={state} value={state} data-value={state}>
-            {state}
+            <li style={{listStyle: 'none'}}>{state}</li>
           </MenuItem>
         ))}
       </Select>
@@ -137,7 +137,7 @@ export default function SearchHospital() {
         </MenuItem>
         {cities.map((city) => (
           <MenuItem key={city} value={city} data-value={city}>
-            {city}
+            <li style={{listStyle: 'none'}}>{city}</li>
           </MenuItem>
         ))}
       </Select>
