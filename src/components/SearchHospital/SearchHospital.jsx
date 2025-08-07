@@ -74,6 +74,7 @@ export default function SearchHospital() {
   };
 
   // Check if both state and city are selected and all data is loaded
+  // Only allow the search button to render when both dropdowns are loaded and have valid selections
   const isFormValid = formData.state && formData.city && !isLoading && isStatesLoaded && isCitiesLoaded;
 
   return (
@@ -99,10 +100,12 @@ export default function SearchHospital() {
           </InputAdornment>
         }
         required
+        // Disable state dropdown until states are loaded
         disabled={!isStatesLoaded}
         sx={{ minWidth: 200, width: "100%" }}
       >
         <MenuItem disabled value="" selected>
+          {/* Show loading text until states are loaded */}
           {!isStatesLoaded ? "Loading states..." : "State"}
         </MenuItem>
         {states.map((state) => (
@@ -124,10 +127,12 @@ export default function SearchHospital() {
           </InputAdornment>
         }
         required
+        // Disable city dropdown until a state is selected and cities are loaded
         disabled={!formData.state || isLoading || !isCitiesLoaded}
         sx={{ minWidth: 200, width: "100%" }}
       >
         <MenuItem disabled value="" selected>
+          {/* Show loading text or prompt until cities are loaded */}
           {!formData.state ? "Select state first" : isLoading ? "Loading cities..." : "City"}
         </MenuItem>
         {cities.map((city) => (
@@ -137,7 +142,7 @@ export default function SearchHospital() {
         ))}
       </Select>
 
-      {/* Search button is conditionally rendered only when both state and city are selected */}
+      {/* Search button is conditionally rendered only when both state and city are selected and loaded */}
       {isFormValid && (
         <Button
           id="searchBtn"

@@ -11,12 +11,11 @@ export default function TimeSlotPicker({
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [isReady, setIsReady] = useState(false);
 
-  // Ensure component is ready for interaction
+  // Ensure component is ready for interaction (timing fix for UI/test reliability)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsReady(true);
-    }, 150);
-    
+    // Delay to ensure all time slot chips are rendered before interaction (for test reliability).
+    // This ensures time slot chips are reliably present and interactable for tests and users.
+    const timer = setTimeout(() => setIsReady(true), 150);
     return () => clearTimeout(timer);
   }, []);
 
@@ -42,26 +41,24 @@ export default function TimeSlotPicker({
         opacity: isReady ? 1 : 0.7,
       }}
       onClick={props.handleClick}
+      // Disable chip if booking is in progress or not ready
       disabled={isBookingInProgress || !isReady}
     />
   );
 
   const handleClick = async (slot) => {
+    // Prevent interaction if booking is in progress or not ready
     if (isBookingInProgress || !isReady) return;
-    
     setIsBookingInProgress(true);
     setSelectedSlot(slot);
-    
     try {
       // Add a small delay to ensure UI updates are visible
       await new Promise(resolve => setTimeout(resolve, 150));
-      
       const bookingDetails = { 
         ...details, 
         bookingDate: selectedDate, 
         bookingTime: slot 
       };
-      
       await handleBooking(bookingDetails);
     } catch (error) {
       console.error("Booking failed:", error);

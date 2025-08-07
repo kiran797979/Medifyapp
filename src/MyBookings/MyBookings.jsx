@@ -11,7 +11,8 @@ export default function MyBookings() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Load bookings from localStorage with proper error handling
+    // Load bookings from localStorage on mount, with error handling for robustness.
+    // This ensures bookings persist in localStorage and are displayed after reload.
     try {
       const localBookings = localStorage.getItem("bookings") || "[]";
       const parsedBookings = JSON.parse(localBookings);

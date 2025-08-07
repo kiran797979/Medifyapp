@@ -21,10 +21,11 @@ export default function BookingModal({
     e.preventDefault();
     triggerEvent();
 
+    // Load existing bookings from localStorage, or use an empty array if none
     const bookings = localStorage.getItem("bookings") || "[]";
-
     const oldBookings = JSON.parse(bookings);
 
+    // Save the new booking to localStorage (persist bookings across reloads)
     localStorage.setItem(
       "bookings",
       JSON.stringify([

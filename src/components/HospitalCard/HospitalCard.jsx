@@ -24,22 +24,21 @@ export default function HospitalCard({
     };
   }, [details]);
 
-  // Ensure button is ready after component mounts
+  // Ensure button is ready after component mounts (timing fix for UI/test reliability)
   useEffect(() => {
-    // Small delay to ensure component is fully rendered
+    // Small delay to ensure the booking button is rendered and visible for UI tests and user interaction.
+    // This ensures the booking button is reliably present and interactable for both users and automated tests.
     const timer = setTimeout(() => {
       setIsButtonReady(true);
     }, 100);
-    
     return () => clearTimeout(timer);
   }, []);
 
   const handleBookingClick = () => {
+    // Prevent interaction if button is not ready or booking is in progress
     if (!isButtonReady || isBookingInProgress) return;
-    
     setIsBookingInProgress(true);
     setShowCalendar((prev) => !prev);
-    
     // Small delay to ensure state updates before any async operations
     setTimeout(() => {
       setIsBookingInProgress(false);
@@ -173,6 +172,7 @@ export default function HospitalCard({
                     opacity: isButtonReady ? 1 : 0.5,
                   }}
                 >
+                  {/* Button text changes based on calendar visibility */}
                   {!showCalendar
                     ? "Book FREE Center Visit"
                     : "Hide Booking Calendar"}
@@ -227,6 +227,7 @@ export default function HospitalCard({
           }}
           data-testid="booking-calendar"
         >
+          {/* Calendar is only rendered when showCalendar is true, ensuring UI/test reliability */}
           <Calendar
             details={details}
             availableSlots={availableSlots}
