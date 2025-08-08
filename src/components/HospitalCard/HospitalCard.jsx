@@ -193,7 +193,10 @@ export default function HospitalCard({
                 }}
               />
               <Chip
-                label={format(new Date(details.bookingDate), "dd MMMM yyyy")}
+                label={(function(){
+                  const d = new Date(details.bookingDate);
+                  return isNaN(d.getTime()) ? "Date TBD" : format(d, "dd MMMM yyyy");
+                })()}
                 variant="outlined"
                 color="success"
                 sx={{
