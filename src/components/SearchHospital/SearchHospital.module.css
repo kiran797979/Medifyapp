@@ -1,0 +1,27 @@
+.select {
+  width: 100%;
+  min-width: 200px;
+  height: 48px;
+  background-color: #FAFBFE;
+  border: 1px solid #F0F0F0;
+  border-radius: 8px;
+  color: #102851;
+  padding: 0 14px;
+  font-family: Poppins, sans-serif;
+  font-size: 14px;
+  line-height: 1.2;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.select:focus {
+  border-color: #2AA7FF;
+  box-shadow: 0 0 0 3px rgba(42, 167, 255, 0.15);
+}
+
+.select:disabled {
+  cursor: not-allowed;
+  background-color: #F5F7FB;
+  color: #9aa9bf;
+}
+

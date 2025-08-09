@@ -1,7 +1,8 @@
-import { MenuItem, Select, Button, InputAdornment, Box } from "@mui/material";
+import { Button, Box } from "@mui/material";
 import { useEffect, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
+import styles from "./SearchHospital.module.css";
 
 //Component to search the hospitals based on State and City selection.
 //API used to fetch details of hospital and set the values in formData
@@ -106,59 +107,43 @@ export default function SearchHospital() {
         flexDirection: { xs: "column", md: "row" },
       }}
     >
-      <Select
-        displayEmpty
+      <select
         id="state"
         name="state"
         value={formData.state}
         onChange={handleChange}
-        startAdornment={
-          <InputAdornment position="start">
-            <SearchIcon />
-          </InputAdornment>
-        }
         required
-        // Disable state dropdown until states are loaded
         disabled={!isStatesLoaded}
-        sx={{ minWidth: 200, width: "100%" }}
+        className={styles.select}
       >
-        <MenuItem disabled value="" selected>
-          {/* Show loading text until states are loaded */}
+        <option value="" disabled>
           {!isStatesLoaded ? "Loading states..." : "State"}
-        </MenuItem>
+        </option>
         {states.map((state) => (
-          <MenuItem key={state} value={state} data-value={state}>
-            <li style={{listStyle: 'none'}}>{state}</li>
-          </MenuItem>
+          <option key={state} value={state}>
+            {state}
+          </option>
         ))}
-      </Select>
+      </select>
 
-      <Select
-        displayEmpty
+      <select
         id="city"
         name="city"
         value={formData.city}
         onChange={handleChange}
-        startAdornment={
-          <InputAdornment position="start">
-            <SearchIcon />
-          </InputAdornment>
-        }
         required
-        // Disable city dropdown until a state is selected and cities are loaded
         disabled={!formData.state || isLoading || !isCitiesLoaded}
-        sx={{ minWidth: 200, width: "100%" }}
+        className={styles.select}
       >
-        <MenuItem disabled value="" selected>
-          {/* Show loading text or prompt until cities are loaded */}
+        <option value="" disabled>
           {!formData.state ? "Select state first" : isLoading ? "Loading cities..." : "City"}
-        </MenuItem>
+        </option>
         {cities.map((city) => (
-          <MenuItem key={city} value={city} data-value={city}>
-            <li style={{listStyle: 'none'}}>{city}</li>
-          </MenuItem>
+          <option key={city} value={city}>
+            {city}
+          </option>
         ))}
-      </Select>
+      </select>
 
       {/* Search button is conditionally rendered only when both state and city are selected and loaded */}
       {isFormValid && (
