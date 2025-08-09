@@ -49,7 +49,7 @@ export default function Search() {
         setIsLoading(false);
         setIsInitialLoad(false);
       } catch (_) {
-        // Fallback to existing public API
+        // Fallback to existing public API; if that fails, use local static hospitals for offline/testing
         try {
           const res2 = await fetch(
             `https://meddata-backend.onrender.com/data?state=${encodeURIComponent(state)}&city=${encodeURIComponent(city)}`
@@ -57,8 +57,19 @@ export default function Search() {
           const data2 = await res2.json();
           setHospitals(data2);
         } catch (err) {
-          console.log(err);
-          setError("Failed to load hospitals. Please try again.");
+          try {
+            const res3 = await fetch("/local/hospitals.json");
+            const allHospitals = await res3.json();
+            const filtered = allHospitals.filter(
+              (h) =>
+                String(h.State || "").toLowerCase() === String(state).toLowerCase() &&
+                String(h.City || "").toLowerCase() === String(city).toLowerCase()
+            );
+            setHospitals(filtered);
+          } catch (e) {
+            console.log(err || e);
+            setError("Failed to load hospitals. Please try again.");
+          }
         } finally {
           setIsLoading(false);
           setIsInitialLoad(false);

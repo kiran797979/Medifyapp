@@ -29,13 +29,19 @@ export default function SearchHospital() {
         setStates(data);
         setIsStatesLoaded(true);
       } catch (error) {
-        // Fallback to existing public API
+        // Fallback to existing public API, then to local static JSON for offline/testing
         try {
           const res2 = await fetch("https://meddata-backend.onrender.com/states");
           const data2 = await res2.json();
           setStates(data2);
         } catch (_) {
-          setStates([]);
+          try {
+            const res3 = await fetch("/local/states.json");
+            const data3 = await res3.json();
+            setStates(Array.isArray(data3) ? data3 : []);
+          } catch {
+            setStates([]);
+          }
         } finally {
           setIsStatesLoaded(true);
         }
@@ -61,7 +67,7 @@ export default function SearchHospital() {
         setIsLoading(false);
         setIsCitiesLoaded(true);
       } catch (error) {
-        // Fallback to existing public API
+        // Fallback to existing public API, then to local hospitals data for offline/testing
         try {
           const res2 = await fetch(
             `https://meddata-backend.onrender.com/cities/${encodeURIComponent(formData.state)}`
@@ -69,7 +75,28 @@ export default function SearchHospital() {
           const data2 = await res2.json();
           setCities(data2);
         } catch (_) {
-          setCities([]);
+          try {
+            const res3 = await fetch("/local/hospitals.json");
+            const hospitals = await res3.json();
+            const titleCase = (s) =>
+              String(s)
+                .toLowerCase()
+                .replace(/\b([a-z])/g, (m) => m.toUpperCase());
+            const uniqueCities = Array.from(
+              new Set(
+                hospitals
+                  .filter(
+                    (h) =>
+                      String(h.State || "").toLowerCase() ===
+                      String(formData.state).toLowerCase()
+                  )
+                  .map((h) => titleCase(h.City))
+              )
+            ).sort();
+            setCities(uniqueCities);
+          } catch {
+            setCities([]);
+          }
         } finally {
           setIsLoading(false);
           setIsCitiesLoaded(true); // Mark as loaded even on error

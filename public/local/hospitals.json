@@ -1,0 +1,33 @@
+[
+  {
+    "Provider ID": "010001",
+    "Hospital Name": "SOUTHEAST ALABAMA MEDICAL CENTER",
+    "Address": "1108 ROSS CLARK CIRCLE",
+    "City": "DOTHAN",
+    "State": "Alabama",
+    "ZIP Code": 36301,
+    "County Name": "HOUSTON",
+    "Phone Number": 3347938701,
+    "Hospital Type": "Acute Care Hospitals",
+    "Hospital Ownership": "Government - Hospital District or Authority",
+    "Emergency Services": "Yes",
+    "Meets criteria for meaningful use of EHRs": "Y",
+    "Hospital overall rating": 3
+  },
+  {
+    "Provider ID": "010055",
+    "Hospital Name": "FLOWERS HOSPITAL",
+    "Address": "4370 WEST MAIN STREET",
+    "City": "DOTHAN",
+    "State": "Alabama",
+    "ZIP Code": 36305,
+    "County Name": "HOUSTON",
+    "Phone Number": 3347935000,
+    "Hospital Type": "Acute Care Hospitals",
+    "Hospital Ownership": "Proprietary",
+    "Emergency Services": "Yes",
+    "Meets criteria for meaningful use of EHRs": "Y",
+    "Hospital overall rating": 4
+  }
+]
+
