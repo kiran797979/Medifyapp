@@ -1,6 +1,16 @@
-.select {
-  width: 100%;
+/* Dropdown wrapper to position the menu */
+.dropdownWrapper {
+  position: relative;
   min-width: 200px;
+  width: 100%;
+}
+
+/* Trigger */
+.dropdown {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
   height: 48px;
   background-color: #FAFBFE;
   border: 1px solid #F0F0F0;
@@ -10,18 +20,59 @@
   font-family: Poppins, sans-serif;
   font-size: 14px;
   line-height: 1.2;
-  outline: none;
+  cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.select:focus {
+.dropdown:hover {
+  border-color: #2AA7FF;
+}
+
+.dropdown:focus {
   border-color: #2AA7FF;
   box-shadow: 0 0 0 3px rgba(42, 167, 255, 0.15);
 }
 
-.select:disabled {
+.disabled {
   cursor: not-allowed;
   background-color: #F5F7FB;
   color: #9aa9bf;
+}
+
+.dropdownLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.caret {
+  color: #9aa9bf;
+}
+
+/* Menu */
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #E6E6E6;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  padding: 6px 0;
+}
+
+.dropdownItem {
+  list-style: none;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdownItem:hover {
+  background: #F5F7FB;
 }
 

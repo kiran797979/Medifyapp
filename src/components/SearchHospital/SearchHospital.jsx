@@ -1,5 +1,5 @@
 import { Button, Box } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
 import styles from "./SearchHospital.module.css";
@@ -13,6 +13,10 @@ export default function SearchHospital() {
   const [isLoading, setIsLoading] = useState(false);
   const [isStatesLoaded, setIsStatesLoaded] = useState(false);
   const [isCitiesLoaded, setIsCitiesLoaded] = useState(false);
+  const [isStateOpen, setIsStateOpen] = useState(false);
+  const [isCityOpen, setIsCityOpen] = useState(false);
+  const stateRef = useRef(null);
+  const cityRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -80,8 +84,7 @@ export default function SearchHospital() {
     }
   }, [formData.state]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -96,6 +99,20 @@ export default function SearchHospital() {
   // Only allow the search button to render when both dropdowns are loaded and have valid selections
   const isFormValid = formData.state && formData.city && !isLoading && isStatesLoaded && isCitiesLoaded;
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (stateRef.current && !stateRef.current.contains(event.target)) {
+        setIsStateOpen(false);
+      }
+      if (cityRef.current && !cityRef.current.contains(event.target)) {
+        setIsCityOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <Box
       component="form"
@@ -107,43 +124,76 @@ export default function SearchHospital() {
         flexDirection: { xs: "column", md: "row" },
       }}
     >
-      <select
-        id="state"
-        name="state"
-        value={formData.state}
-        onChange={handleChange}
-        required
-        disabled={!isStatesLoaded}
-        className={styles.select}
-      >
-        <option value="" disabled>
-          {!isStatesLoaded ? "Loading states..." : "State"}
-        </option>
-        {states.map((state) => (
-          <option key={state} value={state}>
-            {state}
-          </option>
-        ))}
-      </select>
+      <div className={styles.dropdownWrapper} ref={stateRef}>
+        <div
+          id="state"
+          className={`${styles.dropdown} ${!isStatesLoaded ? styles.disabled : ""}`}
+          onClick={() => {
+            if (!isStatesLoaded) return;
+            setIsStateOpen((prev) => !prev);
+            // close the other dropdown if open
+            setIsCityOpen(false);
+          }}
+          aria-expanded={isStateOpen}
+          aria-haspopup="listbox"
+        >
+          <span className={styles.dropdownLabel}>
+            {formData.state || (!isStatesLoaded ? "Loading states..." : "State")}
+          </span>
+          <span className={styles.caret} aria-hidden>▾</span>
+        </div>
+        {isStateOpen && (
+          <ul className={styles.dropdownMenu} role="listbox">
+            {states.map((state) => (
+              <li
+                key={state}
+                className={styles.dropdownItem}
+                onClick={() => {
+                  handleChange("state", state);
+                  setIsStateOpen(false);
+                }}
+              >
+                {state}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
-      <select
-        id="city"
-        name="city"
-        value={formData.city}
-        onChange={handleChange}
-        required
-        disabled={!formData.state || isLoading || !isCitiesLoaded}
-        className={styles.select}
-      >
-        <option value="" disabled>
-          {!formData.state ? "Select state first" : isLoading ? "Loading cities..." : "City"}
-        </option>
-        {cities.map((city) => (
-          <option key={city} value={city}>
-            {city}
-          </option>
-        ))}
-      </select>
+      <div className={styles.dropdownWrapper} ref={cityRef}>
+        <div
+          id="city"
+          className={`${styles.dropdown} ${(!formData.state || isLoading || !isCitiesLoaded) ? styles.disabled : ""}`}
+          onClick={() => {
+            if (!formData.state || isLoading || !isCitiesLoaded) return;
+            setIsCityOpen((prev) => !prev);
+            setIsStateOpen(false);
+          }}
+          aria-expanded={isCityOpen}
+          aria-haspopup="listbox"
+        >
+          <span className={styles.dropdownLabel}>
+            {formData.city || (!formData.state ? "Select state first" : isLoading ? "Loading cities..." : "City")}
+          </span>
+          <span className={styles.caret} aria-hidden>▾</span>
+        </div>
+        {isCityOpen && (
+          <ul className={styles.dropdownMenu} role="listbox">
+            {cities.map((city) => (
+              <li
+                key={city}
+                className={styles.dropdownItem}
+                onClick={() => {
+                  handleChange("city", city);
+                  setIsCityOpen(false);
+                }}
+              >
+                {city}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {/* Search button is conditionally rendered only when both state and city are selected and loaded */}
       {isFormValid && (
