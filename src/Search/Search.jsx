@@ -1,5 +1,4 @@
 import { Container, Stack, Box, Typography, CircularProgress } from "@mui/material";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import HospitalCard from "../components/HospitalCard/HospitalCard";
@@ -15,6 +14,7 @@ export default function Search() {
   const [hospitals, setHospitals] = useState([]);
   const [state, setState] = useState(searchParams.get("state"));
   const [city, setCity] = useState(searchParams.get("city"));
+  // Fallback slots; Calendar may fetch live slots per date
   const availableSlots = {
     morning: ["11:30 AM"],
     afternoon: ["12:00 PM", "12:30 PM", "01:30 PM", "02:00 PM", "02:30 PM"],
@@ -27,7 +27,7 @@ export default function Search() {
   const [error, setError] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  //API to fetch hospitals based on state and city selection 
+  // Fetch hospitals based on state and city selection (Fetch API + fallback)
   useEffect(() => {
     const getHospitals = async () => {
       if (!state || !city) {
@@ -40,20 +40,29 @@ export default function Search() {
       setHospitals([]);
       setIsLoading(true);
       setError(null);
-      
+
       try {
-        const data = await axios.get(
-          `https://meddata-backend.onrender.com/data?state=${state}&city=${city}`,
-          { timeout: 15000 } // Add timeout for better reliability
-        );
-        setHospitals(data.data);
+        const res = await fetch(`/api/hospitals?state=${encodeURIComponent(state)}&city=${encodeURIComponent(city)}`, { method: "GET" });
+        if (!res.ok) throw new Error("/api/hospitals failed");
+        const data = await res.json();
+        setHospitals(data);
         setIsLoading(false);
         setIsInitialLoad(false);
-      } catch (err) {
-        console.log(err);
-        setError("Failed to load hospitals. Please try again.");
-        setIsLoading(false);
-        setIsInitialLoad(false);
+      } catch (_) {
+        // Fallback to existing public API
+        try {
+          const res2 = await fetch(
+            `https://meddata-backend.onrender.com/data?state=${encodeURIComponent(state)}&city=${encodeURIComponent(city)}`
+          );
+          const data2 = await res2.json();
+          setHospitals(data2);
+        } catch (err) {
+          console.log(err);
+          setError("Failed to load hospitals. Please try again.");
+        } finally {
+          setIsLoading(false);
+          setIsInitialLoad(false);
+        }
       }
     };
 
@@ -136,11 +145,11 @@ export default function Search() {
               width={{ xs: 1, md: "calc(100% - 384px)" }}
               mr="24px"
             >
-              {/* Hospital cards are rendered with proper data-testid for testing */}
+              {/* Hospital cards clickable */}
               {hospitals.length > 0 &&
                 hospitals.map((hospital, index) => (
                   <HospitalCard
-                    key={hospital["Hospital Name"]}
+                    key={hospital["Hospital Name"] || hospital.id || index}
                     details={hospital}
                     availableSlots={availableSlots}
                     handleBooking={handleBookingModal}
@@ -148,7 +157,7 @@ export default function Search() {
                   />
                 ))}
 
-              {/* Loading state with proper timeout */}
+              {/* Loading state */}
               {isLoading && (
                 <Box
                   sx={{

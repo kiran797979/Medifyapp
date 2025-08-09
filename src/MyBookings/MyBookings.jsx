@@ -61,6 +61,8 @@ export default function MyBookings() {
                 fontSize={{ xs: 32, md: 40 }}
                 fontWeight={700}
                 color="#fff"
+                id="my-bookings-header"
+                data-testid="my-bookings-header"
               >
                 My Bookings
               </Typography>

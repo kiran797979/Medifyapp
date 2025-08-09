@@ -1,7 +1,6 @@
 import { MenuItem, Select, Button, InputAdornment, Box } from "@mui/material";
 import { useEffect, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 //Component to search the hospitals based on State and City selection.
@@ -18,14 +17,23 @@ export default function SearchHospital() {
   useEffect(() => {
     const fetchStates = async () => {
       try {
-        const response = await axios.get(
-          "https://meddata-backend.onrender.com/states"
-        );
-        setStates(response.data);
+        // Prefer app-relative API
+        const res = await fetch("/api/states");
+        if (!res.ok) throw new Error("/api/states failed");
+        const data = await res.json();
+        setStates(data);
         setIsStatesLoaded(true);
       } catch (error) {
-        console.error("Error fetching states:", error);
-        setIsStatesLoaded(true); // Mark as loaded even on error to prevent infinite loading
+        // Fallback to existing public API
+        try {
+          const res2 = await fetch("https://meddata-backend.onrender.com/states");
+          const data2 = await res2.json();
+          setStates(data2);
+        } catch (_) {
+          setStates([]);
+        } finally {
+          setIsStatesLoaded(true);
+        }
       }
     };
 
@@ -38,19 +46,29 @@ export default function SearchHospital() {
       setFormData((prev) => ({ ...prev, city: "" }));
       setIsLoading(true);
       setIsCitiesLoaded(false);
-      
+
       try {
-        const data = await axios.get(
-          `https://meddata-backend.onrender.com/cities/${formData.state}`
-        );
-        setCities(data.data);
+        // Prefer app-relative API
+        const res = await fetch(`/api/cities?state=${encodeURIComponent(formData.state)}`);
+        if (!res.ok) throw new Error("/api/cities failed");
+        const data = await res.json();
+        setCities(data);
         setIsLoading(false);
         setIsCitiesLoaded(true);
-        // console.log("city", data.data);
       } catch (error) {
-        console.log("Error in fetching city:", error);
-        setIsLoading(false);
-        setIsCitiesLoaded(true); // Mark as loaded even on error
+        // Fallback to existing public API
+        try {
+          const res2 = await fetch(
+            `https://meddata-backend.onrender.com/cities/${encodeURIComponent(formData.state)}`
+          );
+          const data2 = await res2.json();
+          setCities(data2);
+        } catch (_) {
+          setCities([]);
+        } finally {
+          setIsLoading(false);
+          setIsCitiesLoaded(true); // Mark as loaded even on error
+        }
       }
     };
 

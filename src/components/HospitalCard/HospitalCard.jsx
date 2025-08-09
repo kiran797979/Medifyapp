@@ -10,29 +10,20 @@ export default function HospitalCard({
   availableSlots,
   handleBooking,
   booking = false,
+  ...rest
 }) {
   const [showCalendar, setShowCalendar] = useState(false);
   const [isBookingInProgress, setIsBookingInProgress] = useState(false);
-  const [isButtonReady, setIsButtonReady] = useState(false);
+  const [isButtonReady, setIsButtonReady] = useState(true);
 
   // Reset booking state when component unmounts or details change
   useEffect(() => {
     return () => {
       setShowCalendar(false);
       setIsBookingInProgress(false);
-      setIsButtonReady(false);
+      setIsButtonReady(true);
     };
   }, [details]);
-
-  // Ensure button is ready after component mounts (timing fix for UI/test reliability)
-  useEffect(() => {
-    // Small delay to ensure the booking button is rendered and visible for UI tests and user interaction.
-    // This ensures the booking button is reliably present and interactable for both users and automated tests.
-    const timer = setTimeout(() => {
-      setIsButtonReady(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleBookingClick = () => {
     // Prevent interaction if button is not ready or booking is in progress
@@ -60,6 +51,7 @@ export default function HospitalCard({
     <Box 
       sx={{ borderRadius: 2, bgcolor: "#fff", p: { xs: 2, md: 4 } }}
       data-testid="hospital-card"
+      {...rest}
     >
       <Stack
         direction={{ xs: "column", md: "row" }}
@@ -83,6 +75,7 @@ export default function HospitalCard({
             mb={1}
             textTransform="capitalize"
             lineHeight={1}
+            data-testid="hospital-name"
           >
             {details["Hospital Name"].toLowerCase()}
           </Typography>

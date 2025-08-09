@@ -1,0 +1,15 @@
+node_modules/
+build/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+cypress/videos/
+cypress/screenshots/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.eslintcache
+*.log
